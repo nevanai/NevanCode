@@ -1,0 +1,25 @@
+{
+  "name": "@codebuff/nevan-agent",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Nevan Agent — voice-first ambient companion that observes the user's workspace and pipelines refined prompts into the Nevan CLI Coder.",
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit -p ."
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./auth": "./src/auth/index.ts",
+    "./core": "./src/core/index.ts",
+    "./voice_agent": "./src/voice_agent/index.ts",
+    "./cli_coder": "./src/cli_coder/index.ts",
+    "./os_listeners": "./src/os_listeners/index.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^22.9.0"
+  },
+  "engines": {
+    "bun": "1.3.11",
+    "node": ">=18.0.0"
+  }
+}

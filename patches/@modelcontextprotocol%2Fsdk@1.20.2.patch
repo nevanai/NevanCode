@@ -1,0 +1,44 @@
+diff --git a/dist/cjs/types.js b/dist/cjs/types.js
+index ac3db0edcb6ea68a3ad507dae26031301da2ea23..e3e3528f25e1f9367bd99fbd0118f7244c50d66d 100644
+--- a/dist/cjs/types.js
++++ b/dist/cjs/types.js
+@@ -662,7 +662,7 @@ exports.GetPromptRequestSchema = exports.RequestSchema.extend({
+         /**
+          * Arguments to use for templating the prompt.
+          */
+-        arguments: zod_1.z.optional(zod_1.z.record(zod_1.z.string()))
++        arguments: zod_1.z.optional(zod_1.z.record(zod_1.z.string(), zod_1.z.string()))
+     })
+ });
+ /**
+@@ -930,7 +930,7 @@ exports.CallToolRequestSchema = exports.RequestSchema.extend({
+     method: zod_1.z.literal('tools/call'),
+     params: BaseRequestParamsSchema.extend({
+         name: zod_1.z.string(),
+-        arguments: zod_1.z.optional(zod_1.z.record(zod_1.z.unknown()))
++        arguments: zod_1.z.optional(zod_1.z.record(zod_1.z.string(), zod_1.z.unknown()))
+     })
+ });
+ /**
+diff --git a/dist/esm/types.js b/dist/esm/types.js
+index f71f2d562e4d1e42cb0cb7b3f49dceab35ba667f..a693233f31dd69b105b5c0f6c82d64087a29febf 100644
+--- a/dist/esm/types.js
++++ b/dist/esm/types.js
+@@ -651,7 +651,7 @@ export const GetPromptRequestSchema = RequestSchema.extend({
+         /**
+          * Arguments to use for templating the prompt.
+          */
+-        arguments: z.optional(z.record(z.string()))
++        arguments: z.optional(z.record(z.string(), z.string()))
+     })
+ });
+ /**
+@@ -919,7 +919,7 @@ export const CallToolRequestSchema = RequestSchema.extend({
+     method: z.literal('tools/call'),
+     params: BaseRequestParamsSchema.extend({
+         name: z.string(),
+-        arguments: z.optional(z.record(z.unknown()))
++        arguments: z.optional(z.record(z.string(), z.unknown()))
+     })
+ });
+ /**

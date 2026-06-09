@@ -1,0 +1,17 @@
+{
+  "name": "nevan-m1-poc",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "PoC for M1 T1.1.1 (vector store) and T1.1.2 (embedding model). Disposable. Not part of the main workspace.",
+  "scripts": {
+    "bench:vector": "bun bench-vector-stores.ts",
+    "smoke:lancedb": "bun smoke-lancedb.ts",
+    "smoke:sqlite-vec": "bun smoke-sqlite-vec.ts"
+  },
+  "dependencies": {
+    "@lancedb/lancedb": "0.29.0",
+    "better-sqlite3": "12.10.0",
+    "sqlite-vec": "0.1.9"
+  }
+}

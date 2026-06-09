@@ -1,0 +1,105 @@
+import { describe, expect, test, beforeEach, afterEach, mock } from 'bun:test'
+import {
+  clearMockedModules,
+  mockModule,
+} from '@codebuff/common/testing/mock-modules'
+
+describe('getModelForRequest free-mode guards', () => {
+  const mockGetValidChatGptOAuthCredentials = mock(() =>
+    Promise.resolve(null),
+  )
+
+  beforeEach(async () => {
+    // Mock CHATGPT_OAUTH_ENABLED to true so the ChatGPT OAuth path is entered.
+    // Uses mockModule helper since this is an absolute package specifier.
+    await mockModule('@codebuff/common/constants/chatgpt-oauth', () => ({
+      CHATGPT_OAUTH_ENABLED: true,
+    }))
+
+    // Mock credentials directly with Bun's mock.module — the helper resolves
+    // relative paths from common/src/testing/, not from this test file.
+    mock.module('../../credentials', () => ({
+      getValidChatGptOAuthCredentials: mockGetValidChatGptOAuthCredentials,
+      // Anthropic OAuth not connected in these tests — keep the ChatGPT path live.
+      getValidAnthropicOAuthCredentials: () => Promise.resolve(null),
+      refreshAnthropicOAuthToken: () => Promise.resolve(null),
+      // Gemini OAuth not connected in these tests — keep the ChatGPT path live.
+      getValidGeminiOAuthCredentials: () => Promise.resolve(null),
+      refreshGeminiOAuthToken: () => Promise.resolve(null),
+      saveGeminiOAuthProject: () => {},
+    }))
+
+    mockGetValidChatGptOAuthCredentials.mockReset()
+    mockGetValidChatGptOAuthCredentials.mockResolvedValue(null)
+  })
+
+  afterEach(() => {
+    mock.restore()
+    clearMockedModules()
+  })
+
+  async function importFresh() {
+    const mod = await import('../model-provider')
+    // Ensure clean rate-limit state
+    mod.resetChatGptOAuthRateLimit()
+    return mod
+  }
+
+  test('throws when ChatGPT OAuth is rate-limited in free mode', async () => {
+    const { getModelForRequest, markChatGptOAuthRateLimited } =
+      await importFresh()
+
+    markChatGptOAuthRateLimited()
+
+    await expect(
+      getModelForRequest({
+        apiKey: 'test-key',
+        model: 'openai/gpt-5.3',
+        costMode: 'free',
+      }),
+    ).rejects.toThrow('ChatGPT rate limit reached')
+  })
+
+  test('throws when ChatGPT OAuth credentials are unavailable in free mode', async () => {
+    const { getModelForRequest } = await importFresh()
+
+    mockGetValidChatGptOAuthCredentials.mockResolvedValue(null)
+
+    await expect(
+      getModelForRequest({
+        apiKey: 'test-key',
+        model: 'openai/gpt-5.3',
+        costMode: 'free',
+      }),
+    ).rejects.toThrow('ChatGPT OAuth credentials unavailable')
+  })
+
+  test('falls through to backend when rate-limited in non-free mode', async () => {
+    const { getModelForRequest, markChatGptOAuthRateLimited } =
+      await importFresh()
+
+    markChatGptOAuthRateLimited()
+
+    const result = await getModelForRequest({
+      apiKey: 'test-key',
+      model: 'openai/gpt-5.3',
+      costMode: 'default',
+    })
+
+    expect(result.isChatGptOAuth).toBe(false)
+  })
+
+  test('falls through to backend when credentials unavailable in non-free mode', async () => {
+    const { getModelForRequest } = await importFresh()
+
+    mockGetValidChatGptOAuthCredentials.mockResolvedValue(null)
+
+    const result = await getModelForRequest({
+      apiKey: 'test-key',
+      model: 'openai/gpt-5.3',
+      costMode: 'default',
+    })
+
+    expect(result.isChatGptOAuth).toBe(false)
+  })
+})
